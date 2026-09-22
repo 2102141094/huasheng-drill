@@ -1,0 +1,19 @@
+{
+  "name": "花生十三系统课 · 刷题",
+  "short_name": "花生刷题",
+  "description": "花生十三/四海公考行测四大模块刷题程序，结合方法论，间隔重复",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f6fb",
+  "theme_color": "#e8442a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
