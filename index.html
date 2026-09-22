@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>花生十三系统课 · 刷题程序</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;color:#1f2733;line-height:1.6}
+header{background:linear-gradient(135deg,#e8442a,#ff6a3d);color:#fff;padding:14px 20px;position:sticky;top:0;z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+header .h1{font-size:17px;font-weight:800;letter-spacing:.5px}
+header .h2{font-size:12px;opacity:.92;margin-top:2px}
+.tabs{display:flex;gap:4px;background:#fff;padding:6px 10px;position:sticky;top:58px;z-index:20;border-bottom:1px solid #eef0f4;flex-wrap:wrap}
+.tab{border:none;background:#f1f3f7;color:#5a6675;padding:7px 14px;border-radius:18px;font-size:13px;cursor:pointer;font-weight:600}
+.tab.on{background:#e8442a;color:#fff}
+.wrap{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(20,30,50,.05)}
+.sec-title{display:flex;align-items:baseline;gap:8px;margin:0 0 12px;flex-wrap:wrap}
+.sec-title h3{margin:0;font-size:16px}
+.muted{color:#8a93a3;font-size:12px}
+.mod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.mod{background:#fff;border-radius:14px;padding:14px;cursor:pointer;border:1px solid #eef0f4;transition:.15s}
+.mod:hover{border-color:#e8442a;transform:translateY(-2px)}
+.mod .mi{font-size:26px}
+.mod .mn{font-weight:800;font-size:15px;margin-top:4px}
+.mod .md{font-size:12px;color:#8a93a3;margin-top:3px}
+.sub-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.sub{background:#f4f6fb;border:1px solid #e8ebf1;padding:6px 12px;border-radius:10px;font-size:13px;cursor:pointer}
+.sub.on{background:#e8442a;color:#fff;border-color:#e8442a}
+.btn{background:#e8442a;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+.btn.ghost{background:#f1f3f7;color:#444}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.q-stem{font-size:16px;font-weight:600;white-space:pre-wrap}
+.opt{display:block;width:100%;text-align:left;background:#f7f9fc;border:1.5px solid #e8ebf1;border-radius:10px;padding:11px 13px;margin:8px 0;font-size:14px;cursor:pointer;transition:.12s}
+.opt:hover{background:#eef3ff}
+.opt.pick{background:#e8442a;color:#fff;border-color:#e8442a}
+.opt.right{background:#1fae6b;color:#fff;border-color:#1fae6b}
+.opt.wrong{background:#e8442a;color:#fff;border-color:#e8442a}
+.explain{background:#f0fbf5;border:1px solid #cdeede;border-left:4px solid #1fae6b;padding:11px 13px;border-radius:8px;margin-top:12px;font-size:14px;white-space:pre-wrap}
+.tip{background:#fff7e9;border:1px solid #ffe3ab;border-left:4px solid #f5a623;padding:10px 12px;border-radius:8px;margin-top:10px;font-size:13px;white-space:pre-wrap}
+.tip b{color:#b9760a}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:20px;color:#e8442a}
+.timer.warn{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.mtag{display:inline-block;background:#fdecea;color:#e8442a;font-size:11px;padding:2px 8px;border-radius:8px;margin-left:6px;font-weight:700}
+.pbar{height:8px;background:#eef0f4;border-radius:6px;overflow:hidden;margin-top:6px}
+.pbar>i{display:block;height:100%;background:#e8442a}
+.stat-row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.stat-row .nm{width:72px;font-size:13px;font-weight:600}
+.stat-row .bar{flex:1;height:10px;background:#eef0f4;border-radius:6px;overflow:hidden}
+.stat-row .bar>i{display:block;height:100%;background:#e8442a}
+.stat-row .vl{width:110px;text-align:right;font-size:12px;color:#8a93a3}
+.wrong-item{border:1px solid #f2d6d0;background:#fff;border-radius:12px;padding:12px;margin-bottom:10px}
+.wrong-item .wt{font-size:14px;font-weight:600}
+.method{border:1px solid #eef0f4;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.method h4{margin:0 0 6px;font-size:14px;color:#e8442a}
+.method ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:#445}
+.method .lead{font-size:13px;color:#556;margin:0}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
+.kpi .b{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 3px rgba(20,30,50,.05)}
+.kpi .v{font-size:20px;font-weight:800;color:#e8442a}
+.kpi .l{font-size:11px;color:#8a93a3;margin-top:2px}
+.hid{display:none!important}
+.summary{text-align:center}
+.summary .big{font-size:40px;font-weight:800;color:#e8442a}
+.choice-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.choice{border:1.5px solid #e8442a;color:#e8442a;background:#fff;padding:7px 14px;border-radius:10px;font-size:13px;cursor:pointer;font-weight:600}
+.choice:hover{background:#e8442a;color:#fff}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2733;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:60;opacity:0;transition:.25s}
+.toast.show{opacity:1}
+@media(max-width:560px){.mod-grid{grid-template-columns:1fr}.kpi{grid-template-columns:repeat(2,1fr)}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e8442a">
+<link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<header>
+  <div class="h1">🥜 花生十三系统课 · 刷题程序</div>
+  <div class="h2">四海公考行测四模块 · 每题限时60秒 · 间隔重复 · 记录存本地文件</div>
+</header>
+<div class="tabs">
+  <button class="tab on" data-tab="practice">刷题</button>
+  <button class="tab" data-tab="method">方法论</button>
+  <button class="tab" data-tab="wrong">错题本</button>
+  <button class="tab" data-tab="stats">统计</button>
+  <button class="tab" data-tab="about">关于</button>
+</div>
+<div class="wrap">
+
+  <div class="view" id="v-practice">
+    <div class="card" id="pickArea">
+      <div class="sec-title"><h3>选择模块</h3><span class="muted">按四海公考行测拆分；每个模块题量 &gt; 1000</span></div>
+      <div class="mod-grid" id="modGrid"></div>
+      <div id="subArea" style="margin-top:14px"></div>
+      <div class="row" style="margin-top:14px">
+        <label class="muted">每组题量：
+          <select id="setSize" class="btn ghost" style="padding:6px 10px">
+            <option value="10">10</option><option value="5">5</option><option value="15">15</option><option value="20">20</option>
+          </select>
+        </label>
+        <label class="muted">每题限时：
+          <select id="perSec" class="btn ghost" style="padding:6px 10px">
+            <option value="60">60秒</option><option value="45">45秒</option><option value="90">90秒</option>
+          </select>
+        </label>
+        <button class="btn" id="btnStart">开始刷题 →</button>
+      </div>
+    </div>
+    <div class="card hid" id="quizArea"></div>
+  </div>
+
+  <div class="view hid" id="v-method">
+    <div class="card"><div class="sec-title"><h3>花生十三方法论</h3><span class="muted">刷题前先过一遍，每题解析都会回扣</span></div><div id="methodArea"></div></div>
+  </div>
+
+  <div class="view hid" id="v-wrong">
+    <div class="card"><div class="sec-title"><h3>错题本 / 待巩固</h3><span class="muted" id="wrongCnt"></span></div><div id="wrongArea"></div></div>
+  </div>
+
+  <div class="view hid" id="v-stats">
+    <div class="card"><div class="sec-title"><h3>学习统计</h3><span class="muted">记录保存在本机文件 records.json</span></div>
+      <div class="kpi" id="kpi"></div><div id="statBars"></div></div>
+  </div>
+
+  <div class="view hid" id="v-about">
+    <div class="card">
+      <div class="sec-title"><h3>关于本程序</h3></div>
+      <p style="font-size:14px">• 科目结构按<b>四海公考</b>（花生十三创办）行测四模块拆分。<br>
+      • 题库为按真实考情/花生十三方法论<b>参数化生成</b>的练习（每模块 1200 题），非逐题转载真题；你可在"关于"页导出进度，或替换为你自己的真题。<br>
+      • <b>间隔重复</b>：答错的题下次必出现；答对的题可选择「不再出现」或「1/3/7 天后再出现」。<br>
+      • <b>每题限时</b>：到 60 秒自动跳下一题（超时记错）。<br>
+      • 记录文件 <code>records.json</code> 与本程序同目录，可备份、可删除重来。</p>
+      <div class="row">
+        <button class="btn ghost" id="btnExportRec">导出进度JSON</button>
+        <button class="btn ghost" id="btnReset">清空记录</button>
+        <span class="muted" id="recStat"></span>
+      </div>
+      <textarea id="jsonBox" placeholder="导出内容显示在此" style="width:100%;min-height:90px;margin-top:10px;border:1px solid #e8ebf1;border-radius:8px;padding:8px;font-family:monospace;font-size:12px"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><h3>导入我的真题</h3><span class="muted">传题后按间隔重复刷，与生成题混排</span></div>
+      <p class="muted" style="font-size:13px">支持 JSON / txt。每条题目需含：<b>module</b>（资料分析/判断推理/言语理解/数量关系 或 ziliao/panduan/yanyu/shuliang）、<b>stem</b>（题干）、<b>opts</b>（4 个选项数组）、<b>ans</b>（正确答案序号 0–3 或字母 A–D）。可选：topic（知识点）、tip（解析/方法论）、material（材料）、sec（建议秒数）。</p>
+      <div class="row" style="flex-wrap:wrap;gap:8px">
+        <input type="file" id="fileQ" accept=".json,.txt,.csv" style="font-size:13px;max-width:240px">
+        <button class="btn" id="btnImportFile">导入文件</button>
+      </div>
+      <textarea id="qBox" placeholder="或在此粘贴题目 JSON 数组，例如：&#10;[{&quot;module&quot;:&quot;ziliao&quot;,&quot;stem&quot;:&quot;...&quot;,&quot;opts&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;],&quot;ans&quot;:1,&quot;topic&quot;:&quot;比重&quot;}]" style="width:100%;min-height:110px;margin-top:8px;border:1px solid #e8ebf1;border-radius:8px;padding:8px;font-family:monospace;font-size:12px"></textarea>
+      <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px">
+        <button class="btn" id="btnImportText">导入粘贴内容</button>
+        <button class="btn ghost" id="btnClearCustom">清空导入</button>
+        <span class="muted" id="customStat"></span>
+      </div>
+      <div class="muted" id="importMsg" style="margin-top:6px;font-size:13px"></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* 花生十三刷题程序 · 参数化题库生成器
+ * 每模块确定性生成 1200 题（按 index 可复现），结合真实考情/方法论。
+ * 既可用于浏览器(window.GEN)，也可被 Node 测试(require)。
+ */
+(function (root) {
+  const TOTAL = 1200; // 每模块题量
+
+  function rng(seed) { let s = (seed >>> 0) || 1; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function ri(r, a, b) { return a + Math.floor(r() * (b - a + 1)); }
+  function pick(r, arr) { return arr[Math.floor(r() * arr.length)]; }
+  function round(x, d) { const p = Math.pow(10, d || 0); return Math.round(x * p) / p; }
+  function uniq(arr) { return Array.from(new Set(arr)); }
+
+  // 构造 4 选项并打乱，保证答案唯一、无重复
+  function opt4(r, correct, makeWrong) {
+    const opts = [correct];
+    let guard = 0;
+    while (opts.length < 4 && guard < 40) {
+      guard++;
+      let w = makeWrong(opts.length);
+      if (!opts.some(o => Math.abs(o - correct) < 1e-9 || Math.abs(o - w) < 1e-9)) opts.push(w);
+    }
+    while (opts.length < 4) opts.push(correct + opts.length); // 兜底不会触发
+    // 打乱
+    for (let i = opts.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1));[opts[i], opts[j]] = [opts[j], opts[i]]; }
+    return { opt: opts.map(String), ans: opts.findIndex(o => Math.abs(o - correct) < 1e-9) };
+  }
+  function optText(r, correct, wrongs) {
+    const opts = uniq([correct, ...wrongs]).slice(0, 4);
+    while (opts.length < 4) opts.push(correct + (opts.length + 1));
+    for (let i = opts.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1));[opts[i], opts[j]] = [opts[j], opts[i]]; }
+    return { opt: opts, ans: opts.indexOf(correct) };
+  }
+
+  /* ===================== 资料分析 ===================== */
+  const ZL_TIP = {
+    base: "基期=现期÷(1+r)。r<5%用化除为乘；r>10%截位直除；r为1/n(如25%=1/4)直接除。",
+    inc: "增长量=现期-基期；或百化分：r=1/n 时 增长量=现期÷(n+1)。",
+    rate: "增长率=(现期-基期)÷基期。识别“增长%/增速/增幅”即求增长率。",
+    ratio: "比重=部分÷整体。注意单位、时间一致。",
+    up: "比重升降判定：部分增速>整体增速→上升，反之下降，只看方向不算值。",
+    avg: "平均数=总量÷份数；平均数增长率=(a-b)/(1+b)。",
+    mult: "倍数=A÷B；“多几倍”=倍数-1。"
+  };
+  function genZiliao(i) {
+    const r = rng(100000 + i);
+    const t = i % 9;
+    if (t === 0) { // 基期
+      const rPct = pick(r, [12.5, 16.7, 20, 25, 33.3, 40, 50, 60, 75, 11, 14, 18, 22, 28, 35]);
+      const A = ri(r, 160, 980);
+      const cor = round(A / (1 + rPct / 100), 1);
+      const o = opt4(r, cor, k => round(cor * (1 + (k % 2 ? 1 : -1) * (0.06 + 0.03 * k)), 1));
+      return mk("ziliao", "基期现期", "某指标现值为" + A + "，同比增长" + rPct + "%，其基期值约为多少？", o, ZL_TIP.base);
+    }
+    if (t === 1) { // 增长量
+      const rPct = pick(r, [12.5, 20, 25, 33.3, 50, 40, 16.7]);
+      const A = ri(r, 200, 900);
+      const cor = round(A - A / (1 + rPct / 100), 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (cor * 0.12 + 3 * k), 1));
+      return mk("ziliao", "增长率增长量", "某指标现值为" + A + "，同比增长" + rPct + "%，其同比增量约为多少？", o, ZL_TIP.inc);
+    }
+    if (t === 2) { // 比重
+      const Z = ri(r, 300, 999); const B = ri(r, 80, Z - 20);
+      const cor = round(B / Z * 100, 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (2 + k), 1));
+      return mk("ziliao", "比重", "总体为" + Z + "，其中部分为" + B + "，该部分所占比重约为多少？", o, ZL_TIP.ratio);
+    }
+    if (t === 3) { // 比重升降
+      const a = ri(r, 3, 18), b = ri(r, 3, 18);
+      const up = a > b;
+      const o = optText(r, up ? "上升" : "下降", ["上升", "下降", "不变", "无法判断"]);
+      return mk("ziliao", "比重", "某部分增速为" + a + "%，整体增速为" + b + "%，则该部分占整体的比重同比（上年同期）如何变化？", o, ZL_TIP.up);
+    }
+    if (t === 4) { // 平均数
+      const S = ri(r, 200, 999), n = pick(r, [4, 5, 6, 8, 10, 12]);
+      const cor = round(S / n, 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (cor * 0.1 + 2 * k), 1));
+      return mk("ziliao", "平均数倍数", "总量为" + S + "，分为" + n + "份，平均每份约为多少？", o, ZL_TIP.avg);
+    }
+    if (t === 5) { // 倍数
+      const B = ri(r, 50, 400), A = B * pick(r, [2, 3, 4, 5, 6]);
+      const cor = round(A / B, 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (0.3 + 0.2 * k), 1));
+      return mk("ziliao", "平均数倍数", A + " 是 " + B + " 的几倍？", o, ZL_TIP.mult);
+    }
+    if (t === 6) { // 基期比重
+      const Z = ri(r, 300, 900), B = ri(r, 80, Z - 30);
+      const a = ri(r, 4, 16), b = ri(r, 4, 16);
+      const cor = round(B / Z * (1 + b / 100) / (1 + a / 100) * 100, 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (1.5 + k), 1));
+      return mk("ziliao", "比重", "现期整体" + Z + "（+增速" + b + "%），部分" + B + "（+增速" + a + "%），基期部分占整体比重约为？", o, ZL_TIP.ratio + " 基期比重=(B/Z)×((1+b)/(1+a))。");
+    }
+    if (t === 7) { // 增长率(已知基期)
+      const base = ri(r, 120, 800), cur = base + ri(r, 20, base);
+      const cor = round((cur - base) / base * 100, 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (cor * 0.15 + 2), 1));
+      return mk("ziliao", "增长率增长量", "某指标由" + base + "增至" + cur + "，其增长率约为？", o, ZL_TIP.rate);
+    }
+    // t===8 两期比重差方向已含在 up；此处做“增长量(百化分直除)”
+    const rPct = pick(r, [12.5, 20, 25, 33.3, 50]);
+    const A = ri(r, 240, 880);
+    const cor = round(A / (1 + rPct / 100) * (rPct / 100) / (1 + rPct / 100), 1);
+    const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (cor * 0.1 + 3), 1));
+    return mk("ziliao", "增长率增长量", "现值" + A + "、增速" + rPct + "%，用百化分估算其增量约为？", o, ZL_TIP.inc);
+  }
+
+  /* ===================== 判断推理 ===================== */
+  const PA_REL = {
+    "因果": [["努力", "成功"], ["播种", "收获"], ["耕耘", "丰收"], ["练习", "熟练"], ["锻炼", "健康"]],
+    "功能": [["手机", "通讯"], ["钟表", "计时"], ["笔", "书写"], ["灯", "照明"], ["钥匙", "开锁"]],
+    "场所": [["教师", "教室"], ["医生", "医院"], ["工人", "工厂"], ["农民", "田地"], ["演员", "舞台"]],
+    "工具": [["医生", "手术刀"], ["农民", "锄头"], ["画家", "画笔"], ["作家", "笔"], ["厨师", "锅"]],
+    "近义": [["美丽", "漂亮"], ["寒冷", "冰冷"], ["高兴", "开心"], ["敏捷", "灵敏"]],
+    "反义": [["黑", "白"], ["大", "小"], ["高", "矮"], ["明", "暗"]],
+    "种属": [["苹果", "水果"], ["老虎", "动物"], ["小麦", "庄稼"], ["玫瑰", "花"]],
+    "组成": [["树", "森林"], ["书", "图书馆"], ["兵", "军队"], ["砖", "墙"]]
+  };
+  const PA_REL_KEYS = Object.keys(PA_REL);
+  function genPanduan(i) {
+    const r = rng(200000 + i);
+    const t = i % 4;
+    if (t === 0) { // 类比
+      const rel = pick(r, PA_REL_KEYS);
+      const group = PA_REL[rel];
+      const stemPair = pick(r, group);
+      const correctPair = pick(r, group.filter(p => p !== stemPair));
+      const wrongRels = PA_REL_KEYS.filter(k => k !== rel);
+      const wrongs = [];
+      for (let k = 0; k < 3; k++) { const wr = pick(r, wrongRels); const wp = pick(r, PA_REL[wr]); wrongs.push(wp[0] + ":" + wp[1]); }
+      const o = optText(r, correctPair[0] + ":" + correctPair[1], wrongs);
+      return mk("panduan", "类比推理", stemPair[0] + " : " + stemPair[1], o, "类比先定关系类型（" + rel + "），再二级辨析；选项须同关系。");
+    }
+    if (t === 1) { // 逻辑：削弱/加强
+      const topics = [["喝咖啡", "失眠", "含咖啡因"], ["运动", "长寿", "促进代谢"], ["阅读", "成绩好", "扩知识面"], ["节食", "瘦", "热量缺口"], ["午睡", "精力好", "补睡眠"]];
+      const tp = pick(r, topics);
+      const kind = ri(r, 0, 1);
+      let stem, correct, wrongs, tip;
+      if (kind === 0) { // 削弱：因果倒置最强
+        stem = "论点：" + tp[0] + "导致" + tp[1] + "。论据：" + tp[0] + tp[2] + "。以下最能削弱的是？";
+        correct = tp[1] + "的人本就偏爱" + tp[0] + "（因果倒置）";
+        wrongs = ["" + tp[2] + "会加剧" + tp[1] + "（加强）", "有人" + tp[0] + "也" + tp[1] + "", "样本太少，不具代表性"];
+        tip = "加强削弱三栏法：先定论点论据，削弱优先因果倒置>他因>削论据。";
+      } else { // 加强：搭桥
+        stem = "论据：" + tp[0] + tp[2] + "。结论：" + tp[0] + "使人" + tp[1] + "。以下最能加强的是？";
+        correct = tp[2] + "能直接带来" + tp[1] + "（搭桥）";
+        wrongs = ["不" + tp[0] + "的人也" + tp[1] + "", tp[1] + "与" + tp[0] + "无关", "有人反对该结论"];
+        tip = "加强首选搭桥：建立论据到论点的联系，力度最强。";
+      }
+      const o = optText(r, correct, wrongs);
+      return mk("panduan", "逻辑判断", stem, o, tip);
+    }
+    if (t === 2) { // 定义判断
+      const defs = [
+        ["沉没成本", "已经发生且无法收回的支出", "已买不可退的票", ["月底待交的房租", "下月工资", "计划买的电脑"]],
+        ["偷换概念", "论证中混用同一语词的不同含义", "把“自由(权利)”偷换为“自由(无拘束)”", ["举例说明", "引用数据", "换个例子"]],
+        ["不当类比", "将本质不同的事物强行类比", "用动物实验推人用药", ["同比对比", "控制变量", "前后测"]],
+        ["幸存者偏差", "只关注幸存者而忽略沉默多数", "看成功者经验忽略失败者", ["随机抽样", "全面调查", "控制变量"]],
+        ["诉诸权威", "以权威身份代替论证", "因为专家说所以对", ["举例论证", "数据证明", "逻辑推导"]],
+        ["因果倒置", "把原因结果颠倒", "把“病致懒”说成“懒致病”", ["加强因果", "举反例", "数据支撑"]],
+        ["稻草人", "歪曲对方观点再攻击", "把对方说成“全不要规则”再批", ["直接反驳", "举例", "引用"]],
+        ["双刃剑", "事物同时有正反两面", "网络既便利又致瘾", ["只有好处", "只有坏处", "无关"]]
+      ];
+      const d = pick(r, defs);
+      const o = optText(r, d[2], d[3]);
+      return mk("panduan", "定义判断", d[0] + "：" + d[1] + "。下列属于的是？", o, "定义三要素：被定义项+条件+结果；忠于题干，不脑补。");
+    }
+    // t===3 图形推理（规律识别）
+    const rules = [["对称性", "各图均只有1条竖直对称轴", ["封闭区域数", "一笔画", "位置平移"]],
+    ["封闭区域数(面)", "图形面数依次为1、2、3、4递增", ["对称性", "笔画数", "样式遍历"]],
+    ["一笔画", "奇点数均为0或2，均可一笔画成", ["对称性", "封闭性", "曲直性"]],
+    ["位置平移", "小元素沿固定方向移动", ["属性对称", "数量面", "功能元素"]],
+    ["旋转", "图形每次顺时针旋转90°", ["翻转", "平移", "遍历"]],
+    ["遍历", "每行均出现相同元素各一次", ["对称", "一笔画", "平移"]]];
+    const ru = pick(r, rules);
+    const o = optText(r, ru[0], ru[2]);
+    return mk("panduan", "图形推理", "题干图形的规律是？描述：" + ru[1], o, "图形四规律顺序试：属性→数量→位置→样式；优先稳定考点。");
+  }
+
+  /* ===================== 言语理解 ===================== */
+  const YY_IDIOMS = [["一蹴而就", "一下子完成"], ["持之以恒", "长久坚持"], ["有的放矢", "针对性"], ["因噎废食", "怕出问题就不干"], ["相辅相成", "互相配合"], ["潜移默化", "不知不觉影响"], ["根深蒂固", "基础深难改"], ["应运而生", "顺应时机产生"]];
+  function genYanyu(i) {
+    const r = rng(300000 + i);
+    const t = i % 2;
+    if (t === 0) { // 逻辑填空
+      const pairs = [
+        ["治理乱象不能__，必须建立长效机制。", "一蹴而就", ["持之以恒", "有的放矢", "因噎废食"]],
+        ["二者__，缺一不可。", "相辅相成", ["潜移默化", "根深蒂固", "应运而生"]],
+        ["优秀文化__地影响着一代代人。", "潜移默化", ["相辅相成", "因噎废食", "有的放矢"]],
+        ["这种观念__，难以改变。", "根深蒂固", ["一蹴而就", "应运而生", "持之以恒"]],
+        ["新需求__，催生了新业态。", "应运而生", ["因噎废食", "根深蒂固", "相辅相成"]],
+        ["做事要__，不能盲目。", "有的放矢", ["潜移默化", "一蹴而就", "相辅相成"]]
+      ];
+      const p = pick(r, pairs);
+      const o = optText(r, p[1], p[2]);
+      return mk("yanyu", "逻辑填空", p[0], o, "逻辑填空看搭配、呼应与感情色彩；横线处与前后文构成语义呼应。");
+    }
+    // 片段阅读
+    const subs = [["刷题无用", "高质量复盘才拉开差距", "核心在复盘而非堆量"],
+    ["盲目扩张", "规划要因地制宜、量力而行", "城市需科学规划"],
+    ["只读不思考", "思考塑造独立思辨", "读而不思等于未读"],
+    ["只重速度", "质量比速度更关键", "应先保质量再提速度"],
+    ["单打独斗", "协作能产生倍增效应", "合作优于孤军"]];
+    const s = pick(r, subs);
+    const stem = "不少人认为" + s[0] + "。然而，" + s[1] + "。因此，" + s[2] + "。这段文字意在说明：";
+    const correct = s[2];
+    const wrongs = [s[0] + "很有道理", s[1] + "并不重要", "以上都不对"];
+    const o = optText(r, correct, wrongs);
+    return mk("yanyu", "片段阅读", stem, o, "片段阅读三维定位：转折词(然而)、结论词(因此)后为重点；主题词锁定主旨。");
+  }
+
+  /* ===================== 数量关系 ===================== */
+  function genShuliang(i) {
+    const r = rng(400000 + i);
+    const t = i % 7;
+    if (t === 0) { // 工程赋值
+      const a = pick(r, [8, 10, 12, 15]), b = pick(r, [12, 15, 18, 20, 24]);
+      const L = a * b; const ea = L / a, eb = L / b; const cor = L / (ea + eb);
+      const o = opt4(r, cor, k => cor + (k % 2 ? 1 : -1) * (1 + k));
+      return mk("shuliang", "工程问题", "甲独做" + a + "天、乙独做" + b + "天完成，合作需几天？", o, "415分算法·赋值法：设总量为a、b公倍数，效率=总量/时间，合作=总量/效率和。");
+    }
+    if (t === 1) { // 行程比例
+      const ratio = pick(r, [[3, 2], [4, 3], [5, 3], [2, 1]]); const ta = ri(r, 4, 10);
+      const cor = round(ta * ratio[1] / ratio[0], 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (1 + 0.5 * k), 1));
+      return mk("shuliang", "行程问题", "甲、乙速度比" + ratio[0] + ":" + ratio[1] + "，同路程甲用" + ta + "小时，乙用几小时？", o, "比例转化：同路程时间比=速度反比=" + ratio[1] + ":" + ratio[0] + "。");
+    }
+    if (t === 2) { // 经济利润
+      const cost = pick(r, [100, 120, 150, 200, 250]); const rate = pick(r, [20, 25, 30, 40]);
+      const cor = cost * (1 + rate / 100);
+      const o = opt4(r, cor, k => cor + (k % 2 ? 1 : -1) * (cost * 0.08 + 5 * k));
+      return mk("shuliang", "经济利润", "进价" + cost + "元，利润率" + rate + "%，售价为？", o, "售价=进价×(1+利润率)；利润率=利润/进价，分母别用售价。");
+    }
+    if (t === 3) { // 容斥
+      const N = ri(r, 60, 120), A = ri(r, 30, N - 20), B = ri(r, 25, N - 20), both0 = ri(r, 5, 15);
+      const atLeast = N - both0; const cor = A + B - atLeast;
+      const o = opt4(r, cor, k => cor + (k % 2 ? 1 : -1) * (2 + k));
+      return mk("shuliang", "容斥问题", N + "人中，" + A + "人会A、" + B + "人会B，" + both0 + "人两者都不会，则会A和B的共几人？", o, "容斥：A+B-都会=至少会一；先算至少会一=" + N + "-" + both0 + "。");
+    }
+    if (t === 4) { // 植树
+      const L = pick(r, [100, 120, 150, 200]), step = pick(r, [10, 12, 15, 20]); const cor = L / step + 1;
+      const o = opt4(r, cor, k => cor + (k % 2 ? 1 : -1) * (1 + k));
+      return mk("shuliang", "植树问题", "路长" + L + "米，每" + step + "米一棵、两端都种，共几棵？", o, "两端都种=全长/间距+1；只一端=段数；环形=段数。");
+    }
+    if (t === 5) { // 涨跌抵消
+      const up = pick(r, [10, 15, 20, 25]), down = up; const cor = round((1 + up / 100) * (1 - down / 100) * 100 - 100, 1);
+      const o = opt4(r, cor, k => round(cor + (k % 2 ? 1 : -1) * (0.5 + 0.3 * k), 1));
+      return mk("shuliang", "经济利润", "某价先涨" + up + "%再降" + down + "%，相对原价变化？", o, "涨降抵消≠不变：×1.0" + up + "×0.9" + (100 - down) + "，连续百分比用乘法。");
+    }
+    // t===6 相遇
+    const D = pick(r, [240, 300, 360, 420]), v = pick(r, [40, 50, 60, 70]); const cor = D / v;
+    const o = opt4(r, cor, k => cor + (k % 2 ? 1 : -1) * (1 + k));
+    return mk("shuliang", "行程问题", "两地相距" + D + "公里，速度和" + v + "公里/时相向而行，几小时相遇？", o, "相遇：t=路程和/速度和；同向才是追及(路程差/速度差)。");
+  }
+
+  function mk(module, topic, stem, o, tip, material) {
+    return { module, topic, stem, opt: o.opt, ans: o.ans, tip, material: material || null };
+  }
+
+  const MODULES = [
+    { key: "ziliao", name: "资料分析", icon: "📊", desc: "花生十三核心王牌 · 速算体系", topics: ["基期现期", "增长率增长量", "比重", "平均数倍数"] },
+    { key: "panduan", name: "判断推理", icon: "🧩", desc: "图形/定义/类比/逻辑 四子项", topics: ["图形推理", "定义判断", "类比推理", "逻辑判断"] },
+    { key: "yanyu", name: "言语理解", icon: "📖", desc: "片段阅读 + 逻辑填空", topics: ["片段阅读", "逻辑填空"] },
+    { key: "shuliang", name: "数量关系", icon: "🔢", desc: "415分算法 · 保基础分", topics: ["工程问题", "行程问题", "经济利润", "容斥问题", "植树问题"] }
+  ];
+
+  function gen(module, i) {
+    if (module === "ziliao") return genZiliao(i);
+    if (module === "panduan") return genPanduan(i);
+    if (module === "yanyu") return genYanyu(i);
+    if (module === "shuliang") return genShuliang(i);
+    return null;
+  }
+
+  const API = { TOTAL, MODULES, gen, total: () => TOTAL };
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
+  if (typeof window !== "undefined") window.GEN = API;
+  if (root) root.GEN = API;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+
+</script>
+<script>
+const MODULES = GEN.MODULES, MOD_NAME = Object.fromEntries(MODULES.map(m=>[m.key,m.name])), TOTAL = GEN.TOTAL;
+const KEY_LS = "huasheng-drill-records";
+let RECORDS = {};               // id -> {wrong,right,status,next,last}
+let USING_SERVER = false;
+let loaded = false;
+
+/* ---------- 记录持久化 ---------- */
+async function loadRecords(){
+  try{
+    const res = await fetch('/api/records');
+    if(res.ok){ const d = await res.json(); RECORDS = d.records||{}; USING_SERVER = true; loaded=true; return; }
+  }catch(e){}
+  try{ const s = JSON.parse(localStorage.getItem(KEY_LS)); if(s) RECORDS = s; }catch(e){}
+  loaded = true;
+}
+function saveRecords(){
+  try{ localStorage.setItem(KEY_LS, JSON.stringify(RECORDS)); }catch(e){}
+  if(USING_SERVER){
+    fetch('/api/records', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({records: RECORDS})}).catch(()=>{});
+  }
+}
+function rec(id){ if(!RECORDS[id]) RECORDS[id]={wrong:0,right:0,status:'new',next:0,last:0}; return RECORDS[id]; }
+
+/* ---------- 用户导入的真题 ---------- */
+let CUSTOM = [];               // {module,topic,stem,opt,ans,tip,material,sec}
+const KEY_CUS_LS = "huasheng-drill-custom";
+async function loadCustom(){
+  try{
+    const res = await fetch('/api/questions');
+    if(res.ok){ const d = await res.json(); if(Array.isArray(d.questions)){ CUSTOM = d.questions; return; } }
+  }catch(e){}
+  try{ const s = JSON.parse(localStorage.getItem(KEY_CUS_LS)); if(Array.isArray(s)) CUSTOM = s; }catch(e){}
+}
+function saveCustom(){
+  try{ localStorage.setItem(KEY_CUS_LS, JSON.stringify(CUSTOM)); }catch(e){}
+  if(USING_SERVER){ fetch('/api/questions', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({questions:CUSTOM})}).catch(()=>{}); }
+}
+function getQ(id){ const p=id.split(":"); if(p[0]==="custom") return CUSTOM[parseInt(p[1],10)]; return GEN.gen(p[0], parseInt(p[1],10)); }
+function customCountOf(mkey){ return CUSTOM.filter(q=>q && q.module===mkey).length; }
+
+/* ---------- 工具 ---------- */
+const $ = s=>document.querySelector(s), $$ = s=>Array.from(document.querySelectorAll(s));
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1800); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function subTopics(m){ const s=new Set(); for(let i=0;i<TOTAL;i++){ const q=GEN.gen(m,i); if(q) s.add(q.topic); } return Array.from(s); }
+
+/* ---------- 抽题（间隔重复 + 导入真题） ---------- */
+function pickSession(mkey, sub, size){
+  const now = Date.now();
+  const avail = [];
+  // 生成题候选
+  for(let i=0;i<TOTAL;i++){
+    const id = mkey+":"+i;
+    const r = RECORDS[id] || {wrong:0,right:0,next:0,status:'new'};
+    if(r.next <= now){
+      if(!sub || sub==="全部" || (GEN.gen(mkey,i)&&GEN.gen(mkey,i).topic===sub)) avail.push({id, r});
+    }
+  }
+  // 导入真题候选
+  CUSTOM.forEach((q, idx)=>{
+    if(!q || q.module!==mkey) return;
+    const id = "custom:"+idx;
+    const r = RECORDS[id] || {wrong:0,right:0,next:0,status:'new'};
+    if(r.next <= now && (!sub || sub==="全部" || q.topic===sub)) avail.push({id, r, custom:true});
+  });
+  // 优先级：错得多 > next 早 > 导入题优先（用户传的真谛先刷到）
+  avail.sort((a,b)=> (b.r.wrong - a.r.wrong) || (a.r.next - b.r.next) || ((a.custom?0:1)-(b.custom?0:1)));
+  let chosen = avail.slice(0, size).map(x=>x.id);
+  if(chosen.length < size){ // 极端情况：可选不足，补齐
+    for(let i=0;i<TOTAL && chosen.length<size;i++){ const id=mkey+":"+i; if(!chosen.includes(id)) chosen.push(id); }
+    for(let k=0;k<CUSTOM.length && chosen.length<size;k++){ if(CUSTOM[k]&&CUSTOM[k].module===mkey){ const id="custom:"+k; if(!chosen.includes(id)) chosen.push(id); } }
+  }
+  return shuffle(chosen);
+}
+
+/* ---------- 刷题引擎 ---------- */
+let session=null, tick=null, autonext=null;
+let curMod=null, curSub=null;
+function startPractice(){
+  if(!curMod){ toast("请先选一个模块"); return; }
+  const size = parseInt($("#setSize").value,10) || 10;
+  const queue = pickSession(curMod, curSub, size);
+  if(!queue.length){ toast("暂无可用题目"); return; }
+  session = { queue, idx:0, picked:{}, answered:false, perSec: parseInt($("#perSec").value,10)||60, remain:0 };
+  $("#pickArea").classList.add("hid"); $("#quizArea").classList.remove("hid");
+  renderQuestion();
+}
+function renderQuestion(){
+  clearInterval(tick); clearTimeout(autonext);
+  const id = session.queue[session.idx];
+  const q = getQ(id);
+  const m = id.startsWith("custom:") ? q.module : id.split(":")[0];
+  session.answered=false; session.qt0=Date.now(); session.remain=session.perSec;
+  const prog = `第 ${session.idx+1} / ${session.queue.length} 题`;
+  let html = `<div class="row"><span class="mtag">${MOD_NAME[m]||m} · ${q.topic}</span><span class="muted">${prog}</span></div>`;
+  html += `<div class="row" style="margin-top:8px"><span class="muted">本题限时 ${session.perSec}s，到时自动跳题</span><span class="timer" id="qTimer">${session.remain}</span></div>`;
+  html += `<div class="q-stem" style="margin-top:10px">${q.stem}</div>`;
+  html += q.opt.map((o,k)=>`<button class="opt" data-i="${k}">${String.fromCharCode(65+k)}. ${o}</button>`).join("");
+  html += `<div id="qFeedback"></div>`;
+  html += `<div class="row" style="margin-top:12px"><button class="btn ghost" id="btnQuit">退出本组</button><button class="btn" id="btnNext" disabled>下一题 →</button></div>`;
+  $("#quizArea").innerHTML = html;
+  $$("#quizArea .opt").forEach(b=>b.onclick=()=>pick(id, parseInt(b.getAttribute("data-i")), b));
+  $("#btnNext").onclick = nextQuestion;
+  $("#btnQuit").onclick = ()=>{ clearInterval(tick); showPick(); };
+  tick = setInterval(()=>{
+    session.remain--;
+    const el=$("#qTimer"); if(el){ el.textContent=session.remain; el.classList.toggle("warn", session.remain<=10); }
+    if(session.remain<=0){ onTimeout(id); }
+  }, 1000);
+}
+function onTimeout(id){
+  if(session.answered) return;
+  session.answered=true; clearInterval(tick);
+  applyResult(id, false, null, true);
+  autonext = setTimeout(nextQuestion, 1600);
+}
+function pick(id, i, btn){
+  if(session.answered) return;
+  session.answered=true; clearInterval(tick);
+  const q = getQ(id);
+  const correct = (i === q.ans);
+  applyResult(id, correct, i, false, btn, q);
+}
+function applyResult(id, correct, pickI, isTimeout, btn, q){
+  q = q || getQ(id);
+  session.picked[id] = pickI;
+  const r = rec(id); r.last = Date.now();
+  $$("#quizArea .opt").forEach(b=>b.disabled=true);
+  if(pickI!==null && pickI!==undefined){
+    const b = $$("#quizArea .opt").find(x=>parseInt(x.getAttribute("data-i"))===pickI);
+    if(b) b.classList.add(pickI===q.ans?"right":"wrong");
+  }
+  if(!correct){ $$("#quizArea .opt").forEach(b=>{ if(parseInt(b.getAttribute("data-i"))===q.ans) b.classList.add("right"); }); }
+  // 间隔重复更新
+  if(!correct){ r.wrong++; r.status="learning"; r.next = Date.now(); }
+  else { r.right++; }
+  saveRecords();
+  // 反馈
+  const fb = $("#qFeedback");
+  let extra = "";
+  if(correct){
+    if(isTimeout===false){
+      extra = `<div class="choice-row"><span class="muted" style="align-self:center">答对后：</span>`+
+        `<button class="choice" data-c="never">不再出现</button>`+
+        `<button class="choice" data-c="1">1天后再现</button>`+
+        `<button class="choice" data-c="3">3天后再现</button>`+
+        `<button class="choice" data-c="7">7天后再现</button></div>`;
+    }
+  } else {
+    extra = `<div class="tip" style="margin-top:10px"><b>⏰ 已记错</b>：下次练习会再次出现（答对后可选择间隔）。</div>`;
+  }
+  fb.innerHTML = `<div class="explain"><b>${isTimeout?'⏰ 超时（记错）':(correct?'✅ 回答正确':'❌ 回答错误')}</b><br>解析：${q.explain}</div>`+
+    `<div class="tip"><b>🥜 花生十三方法论：</b><br>${q.tip}</div>`+extra;
+  if(correct && isTimeout===false){
+    $$("#qFeedback .choice").forEach(c=>c.onclick=()=>{
+      const cval = c.getAttribute("data-c");
+      const rr = rec(id);
+      if(cval==="never"){ rr.status="mastered"; rr.next = Date.now() + 365*864e5; }
+      else { const d = parseInt(cval,10); rr.next = Date.now() + d*864e5; rr.status = d>=7?"mastered":"learning"; }
+      saveRecords(); toast(cval==="never"?"已设为不再出现":"已设为"+cval+"天后再现"); nextQuestion();
+    });
+  }
+  $("#btnNext").disabled=false;
+  // 若超时，已设自动跳；否则等用户点
+}
+function nextQuestion(){
+  clearTimeout(autonext);
+  if(session.idx < session.queue.length-1){ session.idx++; renderQuestion(); }
+  else finishSet();
+}
+function finishSet(){
+  clearInterval(tick);
+  let right=0; session.queue.forEach(id=>{ const [m,i]=id.split(":"); if(session.picked[id]===GEN.gen(m,parseInt(i,10)).ans) right++; });
+  const total=session.queue.length, acc=Math.round(right/total*100), used=Math.round((Date.now()-(session.t0||Date.now()))/1000);
+  let html=`<div class="summary"><div class="big">${acc}%</div><div class="muted">本组正确率 · 对 ${right}/${total}</div>`;
+  html+=`<div style="margin:16px 0">${acc>=80?'🎉 优秀，保持节奏！':acc>=60?'👍 不错，错题为重练重点':'💪 继续，先把方法论过一遍再刷'}</div>`;
+  html+=`<button class="btn" id="btnAgain">再来一组</button> <button class="btn ghost" id="btnBack">返回选模块</button></div>`;
+  $("#quizArea").innerHTML=html;
+  $("#btnAgain").onclick=()=>{ $("#quizArea").classList.add("hid"); $("#pickArea").classList.remove("hid"); startPractice(); };
+  $("#btnBack").onclick=showPick;
+}
+function showPick(){ clearInterval(tick); $("#quizArea").classList.add("hid"); $("#pickArea").classList.remove("hid"); }
+
+/* ---------- 模块选择 ---------- */
+function renderModGrid(){
+  $("#modGrid").innerHTML = MODULES.map(m=>{ const extra=customCountOf(m.key); return `<div class="mod" data-m="${m.key}"><div class="mi">${m.icon}</div><div class="mn">${m.name}</div><div class="md">${m.desc} · ${TOTAL+extra}题${extra?'（含导入'+extra+'）':''}</div></div>`; }).join("");
+  $$("#modGrid .mod").forEach(el=>el.onclick=()=>{ curMod=el.getAttribute("data-m"); curSub=null; $$("#modGrid .mod").forEach(x=>x.style.border = x===el?"2px solid #e8442a":"1px solid #eef0f4"); renderSub(); });
+}
+function renderSub(){
+  if(!curMod){ $("#subArea").innerHTML=""; return; }
+  const subs = subTopics(curMod);
+  $("#subArea").innerHTML = `<div class="muted" style="margin-bottom:6px">${MOD_NAME[curMod]} · 选择知识点（不选则刷全部）</div><div class="sub-list">`+
+    `<div class="sub ${!curSub?'on':''}" data-s="">全部知识点</div>`+
+    subs.map(s=>`<div class="sub ${curSub===s?'on':''}" data-s="${s}">${s}</div>`).join("")+`</div>`;
+  $$("#subArea .sub").forEach(el=>el.onclick=()=>{ curSub = el.getAttribute("data-s")||null; renderSub(); });
+}
+
+/* ---------- 方法论 ---------- */
+const METHODS = {
+  ziliao:[
+    {h:"① 截位直除三阶精度控制法",lead:"所有除法通用。分子基本不动，只截分母。",pts:["选项差距大(首位不同)→分母截2位","选项差距小(首位相同)→分母截3位","先扫选项再算，别硬除"]},
+    {h:"② 百化分（特征数字法）",lead:"百分数转 1/n，乘除秒出。",pts:["12.5%=1/8，14.3%≈1/7，16.7%≈1/6，20%=1/5，25%=1/4，33.3%≈1/3，50%=1/2","增长量=现期÷(n+1)（r=1/n 时）","背熟这张表，资料提速 50%"]},
+    {h:"③ 化除为乘",lead:"|r|<5% 时，基期≈现期×(1-r)。",pts:["现期108、增3%→基期≈108×0.97","能乘不除，省时且够准"]},
+    {h:"④ 比重升降判定",lead:"问比重升/降，别算具体值。",pts:["部分增速>整体增速→比重升","部分增速<整体增速→比重降","只看方向，扫一眼数直接选"]},
+    {h:"⑤ 分数大小比较",lead:"多个分数比大小，别挨个算。",pts:["横看：分子大分母小→分数大","纵向：同比例缩放后比较","差分法留给极接近的两个分数"]},
+    {h:"⑥ 考场策略",lead:"资料是提分最快模块，目标 80%+。",pts:["材料先行扫描：时间/主体/单位/注释","每篇 5-6 分钟，整组 20 题≤30 分钟","每篇最后一题设 15 秒决策线"]}
+  ],
+  panduan:[
+    {h:"① 图形推理 · 四大规律",lead:"位置/样式/属性/数量，按顺序试。",pts:["属性：对称(轴数量/方向)、曲直、封闭","数量：面数、线数、点、笔画数(一笔画：奇点0或2)","位置：平移/旋转/翻转；样式：遍历/加减"]},
+    {h:"② 定义判断 · 三要素切片",lead:"每题划出三要素，忠于题干。",pts:["被定义项（谁/什么）","状语条件（时间/主体/方式）","结果特征（导致什么）","不脑补，选项须能对应要素"]},
+    {h:"③ 类比推理 · 关系定位",lead:"先定关系类型，再二级辨析。",pts:["语义：近义/反义/象征","逻辑：因果/包容/并列/交叉","语法：主谓/动宾/偏正；常识：功能/场所/材料"]},
+    {h:"④ 逻辑判断 · 三栏笔记法",lead:"削弱/加强题强制用 论点—论据—漏洞。",pts:["翻译推理：如果A→B；只有A才B=B→A；逆否等价","加强首选搭桥","削弱优先因果倒置>他因>削论据"]}
+  ],
+  yanyu:[
+    {h:"① 片段阅读 · 三维定位网",lead:"反对纯语感，答案回原文找依据。",pts:["主题词：全文围绕谁","转折词：但/然而 后是重点","指代词：这/此 指代核心","结论词：因此/可见 引导主旨"]},
+    {h:"② 逻辑填空",lead:"看搭配、看呼应、看感情色彩。",pts:["转折前后语义相反（反义呼应）","并列/递进前后语义相近","褒贬色彩贴合语境","高频成语按真题语境积累"]}
+  ],
+  shuliang:[
+    {h:"① 415 分算法",lead:"花生十三独创，压缩思维路径。",pts:["读题→识别模型→套技巧→验证选项","弱化列式推导，优先锁定答案","每日限时：10题/8分钟"]},
+    {h:"② 高频模型",lead:"先把性价比高的题型练透。",pts:["工程：赋值法（设总量为公倍数）","行程：比例转化（时间比=速度反比）","经济：进价/售价/利润率，注意涨降抵消","容斥、植树、年龄等小模型见题即秒"]},
+    {h:"③ 战略",lead:"数量不贪全，保基础分。",pts:["整除特性、倍数代入等秒杀优先","复杂排列组合/概率可战略放弃","为资料、判断腾时间才是正确打法"]}
+  ]
+};
+function renderMethod(){ let html=""; MODULES.forEach(m=>{ html+=`<div class="sec-title"><h3>${m.icon} ${m.name}</h3></div>`; (METHODS[m.key]||[]).forEach(me=>{ html+=`<div class="method"><h4>${me.h}</h4><p class="lead">${me.lead}</p><ul>${me.pts.map(p=>`<li>${p}</li>`).join("")}</ul></div>`; }); }); $("#methodArea").innerHTML=html; }
+
+/* ---------- 错题本 ---------- */
+function renderWrong(){
+  const ids = Object.keys(RECORDS).filter(id=>RECORDS[id].wrong>0 && RECORDS[id].next<=Date.now()+1);
+  $("#wrongCnt").textContent = ids.length? `待巩固 ${ids.length} 题` : "暂无错题，继续保持！";
+  if(!ids.length){ $("#wrongArea").innerHTML=`<p class="muted">答对的题按你的选择延后或隐藏。做错的会在这里等你去攻克。</p>`; return; }
+  $("#wrongArea").innerHTML = ids.slice(0,200).map(id=>{
+    const q=getQ(id); if(!q) return "";
+    const m = id.startsWith("custom:") ? q.module : id.split(":")[0];
+    return `<div class="wrong-item"><div class="wt"><span class="mtag">${MOD_NAME[m]||m} · ${q.topic}</span> <span class="muted">错 ${RECORDS[id].wrong} 次</span></div>`+
+      `<div class="q-stem" style="font-size:14px;margin:6px 0">${q.stem}</div>`+
+      `<div class="muted">正确答案：${String.fromCharCode(65+q.ans)}. ${q.opt[q.ans]}</div>`+
+      `<div class="tip" style="margin-top:8px"><b>🥜 方法论：</b>${q.tip}</div>`+
+      `<div class="row" style="margin-top:10px"><button class="btn ghost" data-master="${id}">标记掌握</button></div></div>`;
+  }).join("");
+  $$("#wrongArea [data-master]").forEach(b=>b.onclick=()=>{ const id=b.getAttribute("data-master"); const r=rec(id); r.status="mastered"; r.next=Date.now()+365*864e5; saveRecords(); renderWrong(); toast("已标记掌握"); });
+}
+
+/* ---------- 统计 ---------- */
+function renderStats(){
+  let done=0,correct=0,totalAttempts=0;
+  Object.keys(RECORDS).forEach(id=>{ const r=RECORDS[id]; totalAttempts += r.wrong+r.right; correct+=r.right; done += ((r.wrong+r.right)>0?1:0); });
+  const accAll = totalAttempts? Math.round(correct/totalAttempts*100):0;
+  const learning = Object.keys(RECORDS).filter(id=>RECORDS[id].wrong>0).length;
+  $("#kpi").innerHTML=[["已练题次",totalAttempts],["覆盖题目",done],["总正确率",accAll+"%"],["待巩固",learning]].map(([l,v])=>`<div class="b"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  let bars=""; MODULES.forEach(m=>{ let c=0,t=0; Object.keys(RECORDS).forEach(id=>{ let mod=null; if(id.startsWith(m.key+":")) mod=m.key; else if(id.startsWith("custom:")){ const q=CUSTOM[parseInt(id.split(":")[1])]; mod=q?q.module:null; } if(mod===m.key){ const r=RECORDS[id]; t+=r.wrong+r.right; c+=r.right; } }); const acc=t?Math.round(c/t*100):0; bars+=`<div class="stat-row"><div class="nm">${m.name}</div><div class="bar"><i style="width:${acc}%"></i></div><div class="vl">${t?acc+'% ('+t+'次)':'未刷题'}</div></div>`; });
+  $("#statBars").innerHTML=bars;
+}
+
+/* ---------- 关于/记录 ---------- */
+function renderAbout(){
+  const n = Object.keys(RECORDS).length;
+  $("#recStat").textContent = `已记录 ${n} 题 · 保存于 ${USING_SERVER?'records.json(同目录)':'本机浏览器'}`;
+  updateCustomStat();
+}
+function exportRec(){ $("#jsonBox").value = JSON.stringify({records:RECORDS}, null, 1); toast("已生成，可复制备份"); }
+function resetRec(){ if(!confirm("确定清空所有刷题记录？")) return; RECORDS={}; saveRecords(); renderAbout(); renderWrong(); renderStats(); toast("记录已清空"); }
+
+/* ---------- 导入真题 ---------- */
+function parseImport(text){
+  let data; try{ data=JSON.parse(text); }catch(e){ return {err:"JSON 解析失败："+e.message}; }
+  let arr = Array.isArray(data)? data : (data.questions || data.quiz || data.items || []);
+  if(!Array.isArray(arr)) return {err:"未找到题目数组（应为 [...] 或 {\"questions\":[...]}）"};
+  const nameMap = { "资料分析":"ziliao","判断推理":"panduan","言语理解":"yanyu","言语":"yanyu","数量关系":"shuliang","数量":"shuliang",
+                    "ziliao":"ziliao","panduan":"panduan","yanyu":"yanyu","shuliang":"shuliang" };
+  const out=[], errs=[];
+  arr.forEach((it,idx)=>{
+    if(!it || typeof it!=="object") return;
+    const module = nameMap[(it.module||it.科目||it.类型||"").toString().trim()];
+    if(!module){ errs.push("第"+(idx+1)+"题 缺 module/科目"); return; }
+    let opts = it.opts||it.options||it.选项;
+    if(!Array.isArray(opts)){ opts = ["A","B","C","D"].map(k=> it[k]!==undefined? it[k] : (it[k.toLowerCase()]!==undefined? it[k.toLowerCase()] : it["选项"+k])).filter(x=>x!==undefined); }
+    if(!Array.isArray(opts) || opts.length<2){ errs.push("第"+(idx+1)+"题 选项不足"); return; }
+    let ans = it.ans!=null? it.ans : it.答案;
+    let ai;
+    if(typeof ans==="string"){ ans=ans.trim().toUpperCase(); ai = /^[A-D]$/.test(ans)? ans.charCodeAt(0)-65 : parseInt(ans,10); }
+    else ai = parseInt(ans,10);
+    if(isNaN(ai)||ai<0||ai>=opts.length){ errs.push("第"+(idx+1)+"题 答案无效"); return; }
+    out.push({ module, topic: it.topic||it.知识点||"导入题", stem: it.stem||it.题干||it.question||"", opt: opts.map(String), ans: ai, tip: it.tip||it.解析||it.方法论||"", material: it.material||it.材料||null, sec: it.sec||it.秒||null });
+  });
+  return {questions:out, errs};
+}
+function updateCustomStat(){
+  const n=CUSTOM.length;
+  if(!n){ $("#customStat").textContent="尚未导入真题"; return; }
+  const byMod={}; CUSTOM.forEach(q=>byMod[q.module]=(byMod[q.module]||0)+1);
+  const s=Object.keys(byMod).map(k=>MOD_NAME[k]+byMod[k]).join("、");
+  $("#customStat").textContent = `已导入 ${n} 题（${s}）`;
+}
+function doImport(text){
+  const res=parseImport(text);
+  if(res.err){ $("#importMsg").textContent="✗ "+res.err; return; }
+  if(!res.questions.length){ $("#importMsg").textContent="✗ 没有可用的题目（请检查格式）"; return; }
+  CUSTOM = CUSTOM.concat(res.questions);
+  saveCustom(); updateCustomStat(); renderModGrid();
+  let msg="✓ 已导入 "+res.questions.length+" 题";
+  if(res.errs.length) msg+="（跳过 "+res.errs.length+" 条："+res.errs.slice(0,3).join("；")+(res.errs.length>3?"…":"")+"）";
+  $("#importMsg").textContent=msg; $("#qBox").value=""; toast("导入成功");
+}
+
+/* ---------- 标签切换 ---------- */
+function switchTab(name){
+  $$(".tab").forEach(t=>t.classList.toggle("on", t.getAttribute("data-tab")===name));
+  $$(".view").forEach(v=>v.classList.toggle("hid", v.id!=="v-"+name));
+  if(name==="wrong") renderWrong();
+  if(name==="stats") renderStats();
+  if(name==="method") renderMethod();
+  if(name==="about") renderAbout();
+}
+$$(".tab").forEach(t=>t.onclick=()=>switchTab(t.getAttribute("data-tab")));
+
+/* ---------- 启动 ---------- */
+$("#btnStart").onclick=startPractice;
+$("#btnExportRec").onclick=exportRec;
+$("#btnReset").onclick=resetRec;
+$("#btnImportFile").onclick=()=>{ const f=$("#fileQ").files[0]; if(!f){ toast("请先选择文件"); return; } const rd=new FileReader(); rd.onload=()=>doImport(rd.result); rd.readAsText(f); };
+$("#btnImportText").onclick=()=>doImport($("#qBox").value);
+$("#btnClearCustom").onclick=()=>{ if(!confirm("清空所有导入的真题？（刷题记录保留）")) return; CUSTOM=[]; saveCustom(); updateCustomStat(); renderModGrid(); toast("已清空导入题"); };
+renderModGrid();
+loadRecords().then(()=>{ return loadCustom(); }).then(()=>{ renderAbout(); renderModGrid(); });
+
+/* 演示/截图： ?tab=...  ?demo=ziliao  ；?test=1 暴露调试钩子供自动化测试 */
+(function(){
+  const hp=new URLSearchParams(location.search);
+  const tab=hp.get('tab'); if(tab) switchTab(tab);
+  if(hp.get('demo')==='ziliao'){ curMod='ziliao'; renderSub(); startPractice(); }
+  if(hp.get('test')==='1'){ window.__app={pickSession, rec, getRecords:()=>RECORDS, getSession:()=>session, GEN, MOD_NAME, TOTAL, doImport, parseImport, getCustom:()=>CUSTOM, getQ, CUSTOM_REFS:()=>CUSTOM}; }
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
