@@ -81,9 +81,7 @@ header .h2{font-size:12px;opacity:.92;margin-top:2px}
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#e8442a">
 <link rel="apple-touch-icon" href="icon.svg">
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- 账号云端同步用浏览器原生 Web Crypto + GitHub REST API，无需任何第三方库 -->
 </head>
 <body>
 <header>
@@ -146,7 +144,7 @@ header .h2{font-size:12px;opacity:.92;margin-top:2px}
       • 题库为按真实考情/花生十三方法论<b>参数化生成</b>的练习（每模块 1200 题），非逐题转载真题；你可在"关于"页导出进度，或替换为你自己的真题。<br>
       • <b>间隔重复</b>：答错的题下次必出现；答对的题可选择「不再出现」或「1/3/7 天后再出现」。<br>
       • <b>每题限时</b>：到 60 秒自动跳下一题（超时记错）。<br>
-      • 登录账号后，刷题记录保存在<b>云端</b>，换手机登录同一账号即可同步；未登录时记录仅存本机浏览器。</p>
+      • 登录账号后，刷题记录<b>端到端加密</b>后存于你的 GitHub 仓库（仓库公开但内容仅你能解密），换手机登录同一账号即同步；未登录时记录仅存本机浏览器。</p>
       <div class="row">
         <button class="btn ghost" id="btnExportRec">导出进度JSON</button>
         <button class="btn ghost" id="btnReset">清空记录</button>
@@ -177,16 +175,34 @@ header .h2{font-size:12px;opacity:.92;margin-top:2px}
 
 <div id="authModal" class="modal hid">
   <div class="modal-box">
-    <div class="sec-title"><h3 id="authTitle">登录账号</h3><span class="muted" id="authHint">登录后记录随账号同步到任意手机</span></div>
-    <label class="muted" style="display:block;margin:10px 0 4px">邮箱</label>
-    <input id="authEmail" type="email" placeholder="you@example.com" style="width:100%;padding:10px;border:1px solid #e8ebf1;border-radius:8px;font-size:14px">
-    <label class="muted" style="display:block;margin:10px 0 4px">密码（6 位以上）</label>
-    <input id="authPwd" type="password" placeholder="••••••" autocomplete="current-password" style="width:100%;padding:10px;border:1px solid #e8ebf1;border-radius:8px;font-size:14px">
-    <div id="authErr" style="color:#e8442a;margin-top:8px;min-height:16px;font-size:13px"></div>
-    <div class="row" style="margin-top:12px">
-      <button class="btn" id="authSubmit">登录</button>
-      <button class="btn ghost" id="authToggle">去注册</button>
-      <button class="btn ghost" id="authClose">取消</button>
+    <div class="sec-title"><h3 id="authTitle">登录 / 同步账号</h3><span class="muted" id="authHint">记录端到端加密，换手机登录同一账号即同步</span></div>
+
+    <!-- 第一步：GitHub 授权（存储后端） -->
+    <div id="authStep1">
+      <p class="muted" style="font-size:13px;margin:6px 0">第一步：授权 GitHub 作为加密记录的存储（仅本机使用，不会接触你的代码）。需要 <b>repo</b> 权限，可随时在 GitHub 撤销。</p>
+      <ol class="muted" style="font-size:13px;margin:6px 0 10px;padding-left:18px;line-height:1.7">
+        <li>打开 <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:#e8442a">github.com/settings/tokens</a>，点「生成新令牌(token)」</li>
+        <li>勾选 <b>repo</b> 权限，生成并复制令牌（以 <b>ghp_</b> 或 <b>github_pat_</b> 开头）</li>
+        <li>粘贴到下方输入框，点「应用 Token」</li>
+      </ol>
+      <input id="authTokenInput" type="password" placeholder="ghp_xxx 或 github_pat_xxx" style="width:100%;padding:10px;border:1px solid #e8ebf1;border-radius:8px;font-size:14px">
+      <button class="btn" id="authTokenApply" style="width:100%;margin-top:8px">应用 Token</button>
+      <p class="muted" style="font-size:12px;margin-top:8px">令牌仅保存在你本机浏览器，用于读写你自己的仓库；可随时在 GitHub 撤销。也可用其他 GitHub 账号，但只能读写该账号下的仓库。</p>
+    </div>
+
+    <!-- 第二步：账号名 + 密码 -->
+    <div id="authStep2" class="hid">
+      <p class="muted" style="font-size:13px;margin:10px 0 4px">第二步：设置本 App 账号（记录按此账号加密保存）。已授权为 <b id="authGhUser"></b> · <a href="#" id="authGhLogout" style="color:#e8442a;font-size:12px">退出GitHub</a></p>
+      <label class="muted" style="display:block;margin:8px 0 4px">账号名</label>
+      <input id="authName" type="text" placeholder="例如 zhangsan" style="width:100%;padding:10px;border:1px solid #e8ebf1;border-radius:8px;font-size:14px">
+      <label class="muted" style="display:block;margin:10px 0 4px">密码（6 位以上，用于加密，务必牢记）</label>
+      <input id="authPwd" type="password" placeholder="••••••" autocomplete="current-password" style="width:100%;padding:10px;border:1px solid #e8ebf1;border-radius:8px;font-size:14px">
+      <div id="authErr" style="color:#e8442a;margin-top:8px;min-height:16px;font-size:13px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="authSubmit">登录 / 注册</button>
+        <button class="btn ghost" id="authClose">取消</button>
+      </div>
+      <p class="muted" style="font-size:12px;margin-top:10px">同一账号名+密码在所有手机上对应同一份记录；密码遗忘将无法解密恢复，请牢记。</p>
     </div>
   </div>
 </div>
@@ -478,86 +494,155 @@ let RECORDS = {};               // id -> {wrong,right,status,next,last}
 let USING_SERVER = false;
 let loaded = false;
 
-/* ---------- Firebase 账号云端同步 ---------- */
-const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
-};
-const FB_ENABLED = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey);
-let CLOUD = false;            // 是否已登录且云端可用
-let currentUser = null;
-let db = null, fbAuth = null;
+/* ---------- 账号云端同步（GitHub + 端到端加密，零第三方库） ---------- */
+const DATA_REPO = "huasheng-drill-data";      // 加密记录专用仓库（与站点仓库分离，避免保存记录触发 Pages 重建）
+let ghToken = null;        // GitHub 令牌（本机存储）
+let ghLogin = null;        // 令牌对应的用户名
+let acctName = null;       // 当前 App 账号名
+let acctKey = null;        // 由密码派生的 AES-GCM 密钥
+let acctFileId = null;     // 记录文件路径标识（由 账号名+密码 派生，无密码无法定位）
+let acctSalt = null;       // PBKDF2 盐（明文存于文件，不泄露密码）
 let cloudTimer = null;
 
+function cloudReady(){ return !!(ghToken && acctName && acctKey); }
+
+/* ====== 基础工具 ====== */
+function bufToB64(buf){ const b=new Uint8Array(buf); let s=""; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+function b64ToBuf(b64){ const s=atob(b64); const b=new Uint8Array(s.length); for(let i=0;i<s.length;i++) b[i]=s.charCodeAt(i); return b; }
+function b64encUtf8(str){ let o=""; const s=unescape(encodeURIComponent(str)); for(let i=0;i<s.length;i++) o+=String.fromCharCode(s.charCodeAt(i)&0xff); return btoa(o); }
+function b64decUtf8(b64){ return decodeURIComponent(escape(atob(b64))); }
+
+/* ====== Web Crypto：PBKDF2 + AES-GCM ====== */
+const TXT = new TextEncoder(), TXD = new TextDecoder();
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest("SHA-256", TXT.encode(str));
+  return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+async function deriveKey(password, saltBuf){
+  const base = await crypto.subtle.importKey("raw", TXT.encode(password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2", salt:saltBuf, iterations:100000, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function aesEncrypt(key, obj){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, TXT.encode(JSON.stringify(obj)));
+  return { iv: bufToB64(iv), ct: bufToB64(ct) };
+}
+async function aesDecrypt(key, ivB64, ctB64){
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64ToBuf(ivB64)}, key, b64ToBuf(ctB64));
+  return JSON.parse(TXD.decode(pt));
+}
+
+/* ====== 账号界面状态 ====== */
 function updateAccountUI(){
-  const b = $("#acctBtn");
-  if(!b) return;
-  if(currentUser){
-    b.textContent = (currentUser.email||"账号").split("@")[0] + " · 退出";
-    b.onclick = doLogout;
-  } else {
-    b.textContent = "登录";
-    b.onclick = showLogin;
-  }
+  const b = $("#acctBtn"); if(!b) return;
+  if(acctName){ b.textContent = acctName + " · 退出"; b.onclick = doLogout; }
+  else if(ghToken){ b.textContent = "登录账号"; b.onclick = showLogin; }
+  else { b.textContent = "登录"; b.onclick = showLogin; }
 }
-function showLogin(){ const m=$("#authModal"); if(m) m.classList.remove("hid"); const e=$("#authErr"); if(e) e.textContent=""; const p=$("#authPwd"); if(p) p.value=""; }
+function showLogin(){ const m=$("#authModal"); if(m) m.classList.remove("hid"); renderAuthState(); }
 function hideLogin(){ const m=$("#authModal"); if(m) m.classList.add("hid"); }
-let authMode = "login";
-function setAuthMode(m){ authMode=m; const t=$("#authTitle"); if(t) t.textContent = m==="login"?"登录账号":"注册账号"; const s=$("#authSubmit"); if(s) s.textContent = m==="login"?"登录":"注册"; const tg=$("#authToggle"); if(tg) tg.textContent = m==="login"?"去注册":"去登录"; const h=$("#authHint"); if(h) h.textContent = m==="login"?"登录后记录随账号同步到任意手机":"注册一个账号，记录云端保存"; }
-async function doAuth(){
-  const email = $("#authEmail").value.trim(), pwd = $("#authPwd").value;
-  const err = $("#authErr"); if(err) err.textContent="";
-  if(!email || !pwd){ if(err) err.textContent="请填写邮箱和密码"; return; }
-  if(pwd.length<6){ if(err) err.textContent="密码至少 6 位"; return; }
-  try{
-    if(authMode==="login"){ await fbAuth.signInWithEmailAndPassword(email, pwd); }
-    else { await fbAuth.createUserWithEmailAndPassword(email, pwd); }
-    hideLogin();
-  }catch(e){ if(err) err.textContent = (e && e.message) ? e.message : String(e); }
+function renderAuthState(){
+  const s1=$("#authStep1"), s2=$("#authStep2"), err=$("#authErr");
+  if(err) err.textContent="";
+  if(s1) s1.classList.toggle("hid", !!ghToken);
+  if(s2) s2.classList.toggle("hid", !ghToken);
+  const who=$("#authGhUser"); if(who) who.textContent = ghLogin || "";
 }
-function doLogout(){ if(fbAuth) fbAuth.signOut(); }
-function initFirebase(){
-  if(!FB_ENABLED || typeof firebase==="undefined") return;
+
+/* ====== GitHub 授权（手动粘贴 PAT，浏览器内唯一可靠方式） ====== */
+async function whoami(){ try{ const me=await ghApi("GET","/user"); ghLogin=me.login; }catch(e){} }
+async function cacheGhToken(){ try{ localStorage.setItem("huasheng-gh-token", JSON.stringify({t:ghToken,l:ghLogin})); }catch(e){} }
+function loadCachedGhToken(){ try{ const s=JSON.parse(localStorage.getItem("huasheng-gh-token")||"null"); if(s&&s.t){ ghToken=s.t; ghLogin=s.l; return true; } }catch(e){} return false; }
+function applyPastedToken(){
+  const v=$("#authTokenInput").value.trim(); const err=$("#authErr");
+  if(!v){ if(err) err.textContent="请粘贴 GitHub Token（需 repo 权限）"; return; }
+  ghToken=v; whoami().then(()=>{ cacheGhToken(); renderAuthState(); updateAccountUI(); toast("Token 已应用"); });
+}
+function logoutGh(){ ghToken=null; ghLogin=null; acctName=null; acctKey=null; acctFileId=null; acctSalt=null; try{ localStorage.removeItem("huasheng-gh-token"); localStorage.removeItem("huasheng-acct-name"); }catch(e){} renderAuthState(); updateAccountUI(); renderAbout(); renderWrong(); renderStats(); renderModGrid(); }
+
+/* ====== 账号登录 / 注册（同一逻辑：文件不存在即新账号） ====== */
+async function doAccount(){
+  const err=$("#authErr");
+  const nameEl=$("#authName"), pwdEl=$("#authPwd");
+  const name=nameEl?nameEl.value.trim():"", pwd=pwdEl?pwdEl.value:"";
+  if(!name||!pwd){ if(err) err.textContent="请填写账号名和密码"; return; }
+  if(pwd.length<6){ if(err) err.textContent="密码至少 6 位"; return; }
+  if(!crypto || !crypto.subtle){ if(err) err.textContent="加密需要安全环境，请通过本站(https)使用账号同步。"; return; }
   try{
-    firebase.initializeApp(FIREBASE_CONFIG);
-    fbAuth = firebase.auth(); db = firebase.firestore();
-    fbAuth.onAuthStateChanged(async (user)=>{
-      if(user){
-        currentUser = user; CLOUD = true;
-        await loadRecords(); await loadCustom();
-        renderAbout(); renderWrong(); renderStats(); renderModGrid();
-      } else {
-        currentUser = null; CLOUD = false;
-      }
-      updateAccountUI();
-    });
-  }catch(e){ console.warn("Firebase init failed", e); }
+    const pwHash = await sha256Hex(pwd);
+    acctFileId = await sha256Hex(name+"|"+pwHash);
+    const existing = await ghGetFile("users/"+acctFileId+".json");
+    if(existing){
+      acctSalt = b64ToBuf(existing.salt);
+      acctKey = await deriveKey(pwd, acctSalt);
+      if(existing.iv && existing.ct){ const data = await aesDecrypt(acctKey, existing.iv, existing.ct); RECORDS = data.records||{}; CUSTOM = Array.isArray(data.custom)?data.custom:[]; }
+      else { RECORDS={}; CUSTOM=[]; }
+    } else {
+      acctSalt = crypto.getRandomValues(new Uint8Array(16));
+      acctKey = await deriveKey(pwd, acctSalt);
+      RECORDS={}; CUSTOM=[];
+    }
+    acctName = name;
+    try{ localStorage.setItem("huasheng-acct-name", name); }catch(e){}
+    hideLogin(); updateAccountUI(); renderAbout(); renderWrong(); renderStats(); renderModGrid();
+    toast("已登录账号：" + name);
+  }catch(e){ if(err) err.textContent="登录失败（密码错误或网络异常）：" + (e&&e.message?e.message:e); }
+}
+function doLogout(){
+  acctName=null; acctKey=null; acctFileId=null; acctSalt=null;
+  updateAccountUI(); renderAbout(); renderWrong(); renderStats(); renderModGrid();
+  toast("已退出账号（GitHub 授权仍保留）");
+}
+
+/* ====== GitHub REST 封装 + 加密读写 ====== */
+async function ghApi(method, path, data){
+  const headers = {"Authorization":"Bearer "+ghToken,"Accept":"application/vnd.github+json","User-Agent":"huasheng-drill","X-GitHub-Api-Version":"2022-11-28"};
+  if(data) headers["Content-Type"]="application/json";
+  const res = await fetch("https://api.github.com"+path, {method, headers, body: data? JSON.stringify(data): undefined});
+  if(!res.ok){ const t=await res.text().catch(()=> ""); throw new Error(method+" "+path+" -> "+res.status+" "+(t||"").slice(0,120)); }
+  const ct=res.headers.get("content-type")||"";
+  return ct.indexOf("application/json")>=0 ? res.json() : res.text();
+}
+async function ensureDataRepo(){
+  try{ await ghApi("GET","/repos/"+ghLogin+"/"+DATA_REPO); }
+  catch(e){ try{ await ghApi("POST","/user/repos",{name:DATA_REPO, private:false, auto_init:true, description:"花生十三刷题 · 加密记录存储"}); }catch(_){} }
+}
+async function ghGetFile(path){
+  try{
+    const d = await ghApi("GET","/repos/"+ghLogin+"/"+DATA_REPO+"/contents/"+path);
+    const obj = JSON.parse(b64decUtf8(d.content));
+    return { sha:d.sha, salt:obj.salt, iv:obj.iv, ct:obj.ct };
+  }catch(e){ return null; }
+}
+async function ghPutFile(path, obj, sha){
+  const data={message:"sync "+path, content:b64encUtf8(JSON.stringify(obj)), branch:"main"};
+  if(sha) data.sha=sha;
+  await ghApi("PUT","/repos/"+ghLogin+"/"+DATA_REPO+"/contents/"+path, data);
 }
 function scheduleCloud(){
-  if(!CLOUD || !db || !currentUser) return;
+  if(!cloudReady()) return;
   clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(cloudSave, 800);
+  cloudTimer = setTimeout(cloudSave, 600);
 }
 async function cloudSave(){
-  if(!CLOUD || !db || !currentUser) return;
+  if(!cloudReady()) return;
   try{
-    await db.collection("users").doc(currentUser.uid).set({
-      records: RECORDS, custom: CUSTOM,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, {merge:true});
-  }catch(e){ console.warn("cloud save failed", e); }
+    await ensureDataRepo();
+    const enc2 = await aesEncrypt(acctKey, {records:RECORDS, custom:CUSTOM});
+    const path = "users/"+acctFileId+".json";
+    const existing = await ghGetFile(path);
+    await ghPutFile(path, {salt: bufToB64(acctSalt), iv:enc2.iv, ct:enc2.ct}, existing ? existing.sha : null);
+  }catch(e){ console.warn("云端保存失败", e); toast("云端保存失败，已存本机"); }
 }
 
 /* ---------- 记录持久化 ---------- */
 async function loadRecords(){
-  if(CLOUD && db){
+  if(cloudReady()){
     try{
-      const snap = await db.collection('users').doc(currentUser.uid).get();
-      if(snap.exists){ const d=snap.data(); if(d.records) RECORDS = d.records; }
+      const d = await ghGetFile("users/"+acctFileId+".json");
+      if(d && d.iv && d.ct){ const data = await aesDecrypt(acctKey, d.iv, d.ct); if(data.records) RECORDS = data.records; }
       loaded=true; return;
     }catch(e){ console.warn('云端读取失败，回退本机', e); }
   }
@@ -581,10 +666,11 @@ function rec(id){ if(!RECORDS[id]) RECORDS[id]={wrong:0,right:0,status:'new',nex
 let CUSTOM = [];               // {module,topic,stem,opt,ans,tip,material,sec}
 const KEY_CUS_LS = "huasheng-drill-custom";
 async function loadCustom(){
-  if(CLOUD && db){
+  if(cloudReady()){
     try{
-      const snap = await db.collection('users').doc(currentUser.uid).get();
-      if(snap.exists){ const d=snap.data(); if(Array.isArray(d.custom)){ CUSTOM = d.custom; return; } }
+      const d = await ghGetFile("users/"+acctFileId+".json");
+      if(d && d.iv && d.ct){ const data = await aesDecrypt(acctKey, d.iv, d.ct); if(Array.isArray(data.custom)) CUSTOM = data.custom; }
+      return;
     }catch(e){ console.warn('云端读取导入题失败', e); }
   }
   try{
@@ -817,7 +903,7 @@ function renderStats(){
 /* ---------- 关于/记录 ---------- */
 function renderAbout(){
   const n = Object.keys(RECORDS).length;
-  $("#recStat").textContent = `已记录 ${n} 题 · 保存于 ${CLOUD?('云端账号 '+(currentUser&&currentUser.email||'').split('@')[0]):(USING_SERVER?'records.json(同目录)':'本机浏览器')}`;
+  $("#recStat").textContent = `已记录 ${n} 题 · 保存于 ${acctName?('云端账号 '+acctName):(USING_SERVER?'records.json(同目录)':'本机浏览器'+(ghToken&&!acctName?' · 已授权GitHub未登录账号':''))}`;
   updateCustomStat();
 }
 function exportRec(){ $("#jsonBox").value = JSON.stringify({records:RECORDS}, null, 1); toast("已生成，可复制备份"); }
@@ -884,9 +970,12 @@ $("#btnImportFile").onclick=()=>{ const f=$("#fileQ").files[0]; if(!f){ toast("�
 $("#btnImportText").onclick=()=>doImport($("#qBox").value);
 $("#btnClearCustom").onclick=()=>{ if(!confirm("清空所有导入的真题？（刷题记录保留）")) return; CUSTOM=[]; saveCustom(); updateCustomStat(); renderModGrid(); toast("已清空导入题"); };
 renderModGrid();
-initFirebase();
-$("#authSubmit").onclick = doAuth;
-$("#authToggle").onclick = ()=> setAuthMode(authMode==="login"?"register":"login");
+loadCachedGhToken();
+try{ const an=localStorage.getItem("huasheng-acct-name"); if(an) { const ne=$("#authName"); if(ne) ne.value=an; } }catch(e){}
+updateAccountUI();
+$("#authTokenApply").onclick = applyPastedToken;
+const _ghLogout=$("#authGhLogout"); if(_ghLogout) _ghLogout.onclick = (e)=>{ e.preventDefault(); logoutGh(); };
+$("#authSubmit").onclick = doAccount;
 $("#authClose").onclick = hideLogin;
 loadRecords().then(()=>{ return loadCustom(); }).then(()=>{ renderAbout(); renderModGrid(); });
 
